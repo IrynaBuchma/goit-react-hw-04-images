@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '../components/Button/Button';
 import Searchbar from './Searchbar/Searchbar';
 import { fetchImages } from '../service/FetchImages';
@@ -6,76 +6,50 @@ import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
 import Notiflix from 'notiflix';
 
-export class App extends Component {
-  
-  state = {
-    inputData: '',
-    images:[],
-    totalHits: 0,
-    page: 1,
-    status: 'idle',
-    isButtonShown: false,
-  }
-  
-  componentDidUpdate(prevProps, prevState) {
+const App = () => {
+  const [inputData, setInputData] = useState ('');
+  const [images, setImages] = useState ([]);
+  const [page, setPage] = useState (1);
+  const [status, setStatus] = useState ('idle');
+  const [isButtonShown, setIsButtonShown] = useState (false);
 
-    const { inputData, page } = this.state;
-    
 
-    if (inputData !== prevState.inputData || page !== prevState.page) {
-      this.fetchData(inputData, page);
+  useEffect(() => {
+    if(inputData) {
+      fetchData();
     }
-  }
+    }, [inputData, page]);
 
-  handleFormsubmit = (inputData) => {
+  const handleFormSubmit = inputData => {
 
-      this.setState({ 
-        inputData,
-        images:[],
-        totalHits: 0,
-        page: 1,
-        status: 'idle',
-        isButtonShown: false,
-      });
-    }
+        setInputData(inputData);
+        setImages([]);
+        setPage(1);
+  };
 
-  fetchData = async(inputData, page) => {
-      
+ const fetchData = async() => {
       try {
-        this.setState({ status: 'pending'});
+        setStatus('pending');
         const { totalHits, hits } = await fetchImages(inputData, page);
-          if(hits.length < 1) {
-          this.setState({ status: 'idle'});
-          Notiflix.Notify.info('Sorry, there are no images matching your search query');
-          return;
-          }
-              this.setState(prevState => ({
-              images: [...prevState.images, ...hits],
-              totalHits: totalHits,
-              isButtonShown: page < Math.ceil(totalHits / 12),
-              status: 'resolved',
-              }))
-          }
       
+          if(hits.length < 1) {
+            setStatus('idle');
+            Notiflix.Notify.info('Sorry, there are no images matching your search query');
+          return;
+          };
+        setImages(prevState => [...prevState, ...hits]);
+        setPage(page);
+        setIsButtonShown(page < Math.ceil(totalHits / 12));
+        setStatus('resolved');
+      }
       catch (error) {
-        this.setState({ status: 'rejected' });
+        setStatus('rejected');
       }
     }  
 
-  onNextPage = (page, totalHits) => {
-    
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }))
-  }
-    
-  render() {
-
-    const { status, images, isButtonShown } = this.state;
-
       return (
         <div className='app'> 
-            <Searchbar onSubmit={this.handleFormsubmit}/>
+            <Searchbar onSubmit={handleFormSubmit}/>
               {status === 'pending' && (
                   <Loader></Loader>
               )}
@@ -86,9 +60,10 @@ export class App extends Component {
                   <p>Something went wrong, please try again later</p>
               )}
               {isButtonShown && (
-                  <Button onClick={this.onNextPage}></Button>
+                  <Button onClick={() => setPage(page + 1)}></Button>
               )}
         </div>
       )
   }
-}
+
+export default App;
