@@ -15,20 +15,9 @@ const App = () => {
 
 
   useEffect(() => {
-    if(inputData) {
-      fetchData(page);
-    }
-    // eslint-disable-next-line
-  }, [inputData, page]);
+    if(!inputData) return;
 
-  const handleFormSubmit = inputData => {
-
-        setInputData(inputData);
-        setImages([]);
-        setPage(1);
-  };
-
- const fetchData = async() => {
+    const fetchData = async() => {
       try {
         setStatus('pending');
         const { totalHits, hits } = await fetchImages(inputData, page);
@@ -39,7 +28,6 @@ const App = () => {
           return;
           };
         setImages(prevState => [...prevState, ...hits]);
-        setPage(page);
         setIsButtonShown(page < Math.ceil(totalHits / 12));
         setStatus('resolved');
       }
@@ -47,6 +35,16 @@ const App = () => {
         setStatus('rejected');
       }
     }  
+
+      fetchData();
+  }, [inputData, page]);
+
+  const handleFormSubmit = inputData => {
+
+        setInputData(inputData);
+        setImages([]);
+        setPage(1);
+  };
 
       return (
         <div className='app'> 
