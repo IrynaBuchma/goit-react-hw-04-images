@@ -16,9 +16,10 @@ const App = () => {
 
   useEffect(() => {
     if(inputData) {
-      fetchData();
+      fetchData(page);
     }
-    }, [inputData, page]);
+    // eslint-disable-next-line
+  }, [inputData, page]);
 
   const handleFormSubmit = inputData => {
 
