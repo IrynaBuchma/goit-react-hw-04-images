@@ -9,18 +9,19 @@ const modalRoot = document.querySelector('#modal-root');
 const Modal = ({ onClose, children, image}) => {
 
     useEffect(() => {
+
+        const handleKeydown = e => {  
+            if(e.code === 'Escape') {
+                onClose();
+            };
+        };
+
         window.addEventListener('keydown', handleKeydown);
 
         return () => {
             window.removeEventListener('keydown', handleKeydown); 
         }
-    });
-
-    const handleKeydown = e => {  
-        if(e.code === 'Escape') {
-            onClose();
-        };
-    };
+    }, [onClose]);
 
     const handleOverlayClick = e => {
         if(e.currentTarget === e.target) {
